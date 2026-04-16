@@ -1,13 +1,13 @@
 # Tests Coverage Summary
 
-The initial test suite was run against the `task-api` source code for Day 1 deliverables.
+The test suite was run against the `task-api` source code for Day 1 and Day 2 deliverables.
 
 **Coverage Output:**
 ```text
 -----------------|---------|----------|---------|---------|-------------------
 File             | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
 -----------------|---------|----------|---------|---------|-------------------
-All files        |   97.01 |    98.66 |    92.3 |   96.72 |                   
+All files        |    97.4 |    98.83 |    93.1 |   97.14 |                   
  src             |   69.23 |       75 |       0 |   69.23 |                   
   app.js         |   69.23 |       75 |       0 |   69.23 | 10-11,17-18       
  src/routes      |     100 |      100 |     100 |     100 |                   
