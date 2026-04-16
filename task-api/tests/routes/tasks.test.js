@@ -74,10 +74,9 @@ describe('Tasks API', () => {
             taskService.create({ title: 'T1' });
             taskService.create({ title: 'T2' });
             const res = await request(app).get('/tasks?page=1&limit=1');
-            // page 1 skip 1 (bug) means it returns T2 
             expect(res.statusCode).toBe(200);
             expect(res.body.length).toBe(1);
-            expect(res.body[0].title).toBe('T2');
+            expect(res.body[0].title).toBe('T1');
         });
 
         it('should handle undefined pagination limits', async () => {
@@ -152,6 +151,40 @@ describe('Tasks API', () => {
 
         it('should return 404 for non-existent task', async () => {
             const res = await request(app).patch('/tasks/123/complete');
+            expect(res.statusCode).toBe(404);
+        });
+    });
+
+    describe('PATCH /tasks/:id/assign', () => {
+        it('should assign a task to a user', async () => {
+            const t = taskService.create({ title: 'T1' });
+            const res = await request(app)
+                .patch('/tasks/' + t.id + '/assign')
+                .send({ assignee: 'Alice' });
+            expect(res.statusCode).toBe(200);
+            expect(res.body.assignee).toBe('Alice');
+        });
+
+        it('should return 400 for empty or invalid assignee', async () => {
+            const t = taskService.create({ title: 'T1' });
+            const res1 = await request(app).patch('/tasks/' + t.id + '/assign').send({ assignee: '' });
+            expect(res1.statusCode).toBe(400);
+
+            const res2 = await request(app).patch('/tasks/' + t.id + '/assign').send({});
+            expect(res2.statusCode).toBe(400);
+        });
+
+        it('should return 400 if task is already assigned', async () => {
+            const t = taskService.create({ title: 'T1' });
+            await request(app).patch('/tasks/' + t.id + '/assign').send({ assignee: 'Alice' });
+
+            const res = await request(app).patch('/tasks/' + t.id + '/assign').send({ assignee: 'Bob' });
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toBe('Task is already assigned');
+        });
+
+        it('should return 404 if task not found', async () => {
+            const res = await request(app).patch('/tasks/123/assign').send({ assignee: 'Alice' });
             expect(res.statusCode).toBe(404);
         });
     });

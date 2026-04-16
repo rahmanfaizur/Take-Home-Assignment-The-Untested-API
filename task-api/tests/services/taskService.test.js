@@ -61,9 +61,9 @@ describe('taskService', () => {
         taskService.create({ title: 'T2' });
         taskService.create({ title: 'T3' });
         const tasks = taskService.getPaginated(1, 2);
-        // Since page 1 limit 2 offsets by 2. (this is a bug, but right now testing actual behavior)
-        expect(tasks.length).toBe(1);
-        expect(tasks[0].title).toBe('T3');
+        expect(tasks.length).toBe(2);
+        expect(tasks[0].title).toBe('T1');
+        expect(tasks[1].title).toBe('T2');
     });
 
     it('getStats should return counts and overdue', () => {
@@ -103,16 +103,33 @@ describe('taskService', () => {
         expect(taskService.remove('123')).toBe(false);
     });
 
-    it('completeTask should mark task as done and set completedAt', () => {
-        const t = taskService.create({ title: 'T1' });
+    it('completeTask should mark task as done and set completedAt while retaining priority', () => {
+        const t = taskService.create({ title: 'T1', priority: 'high' });
         const completed = taskService.completeTask(t.id);
         expect(completed.status).toBe('done');
         expect(completed.completedAt).not.toBeNull();
-        // It also changes priority to medium (bug)
-        expect(completed.priority).toBe('medium');
+        expect(completed.priority).toBe('high');
     });
 
     it('completeTask should return null if task not found', () => {
         expect(taskService.completeTask('123')).toBeNull();
+    });
+
+    it('assignTask should add assignee to task', () => {
+        const t = taskService.create({ title: 'T1' });
+        const assigned = taskService.assignTask(t.id, 'John Doe');
+        expect(assigned.assignee).toBe('John Doe');
+    });
+
+    it('assignTask should throw if task already assigned', () => {
+        const t = taskService.create({ title: 'T1' });
+        taskService.assignTask(t.id, 'John Doe');
+        expect(() => {
+            taskService.assignTask(t.id, 'Jane Doe');
+        }).toThrow('Task is already assigned');
+    });
+
+    it('assignTask should return null if task not found', () => {
+        expect(taskService.assignTask('123', 'John')).toBeNull();
     });
 });
